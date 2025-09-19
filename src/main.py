@@ -6,31 +6,21 @@ import os
 import logging
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-
-# Database Configuration
-# Use PostgreSQL URL from environment variable, fallback to SQLite for local development
+# Database Configuration 
 database_url = os.environ.get("DATABASE_URL")
 
 if database_url:
-    # Handle Render's postgres:// URL (need postgresql://)
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
-    # ALWAYS set SQLALCHEMY_DATABASE_URI if DATABASE_URL is present
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 else:
-    # Fallback to SQLite for local development (only if DATABASE_URL is not set)
     app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///ai_visibility.db'
-
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 
-# Initialize extensions
+# Initialize extensions (ONLY ONCE)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
