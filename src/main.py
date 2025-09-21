@@ -54,30 +54,32 @@ class AIInteraction(db.Model):
 # Routes
 @app.route('/')
 def index():
-    """Main dashboard page"""
+    """Main dashboard page - returns API status and basic stats"""
     try:
         # Get recent interactions
         recent_interactions = AIInteraction.query.order_by(
             AIInteraction.timestamp.desc()
         ).limit(10).all()
-        
+
         # Get statistics
         total_interactions = AIInteraction.query.count()
         avg_rating = db.session.query(db.func.avg(AIInteraction.rating)).scalar()
-        
+
         stats = {
             'total_interactions': total_interactions,
             'avg_rating': round(avg_rating, 2) if avg_rating else 0,
-            'recent_count': len(recent_interactions)
         }
-        
-        return render_template('index.html', 
-                             interactions=recent_interactions, 
-                             stats=stats)
+
+        return jsonify({
+            'status': 'API is running',
+            'message': 'Welcome to the ZenziAI Visibility Backend API',
+            'stats': stats,
+            'recent_interactions': [interaction.to_dict() for interaction in recent_interactions]
+        })
+
     except Exception as e:
-        logger.error(f"Error in index route: {e}")
-        flash('Error loading dashboard data', 'error')
-        return render_template('index.html', interactions=[], stats={})
+        logging.error(f"Error on main dashboard page: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/log_interaction', methods=['POST'])
 def log_interaction():
