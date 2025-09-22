@@ -64,6 +64,8 @@ class AIInteraction(db.Model):
 # Routes
 @app.route('/')
 def index():
+    @app.route('/')
+def index():
     """Main dashboard page - returns API status and basic stats"""
     try:
         # Get recent interactions
