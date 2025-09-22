@@ -6,27 +6,33 @@ import os
 import logging
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+# Database Configuration 
+database_url = os.environ.get("DATABASE_URL")
 
-# Database Configuration
-# Use PostgreSQL URL from environment variable, fallback to SQLite for local development
-database_url = os.environ.get('DATABASE_URL')
 if database_url:
+<<<<<<< HEAD
     # Handle Render's postgres:// URL (need postgresql://)
     if database_url.startswith('postgres://'):        database_url = database_url.replace('postgres://', 'postgresql://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+=======
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+>>>>>>> 3d8af6db3e8f691708abb33990f55b7a307d5c56
 else:
-    # Fallback to SQLite for local development
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ai_visibility.db'
+    app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///ai_visibility.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 
+<<<<<<< HEAD
 # Initialize extensions
+=======
+# Initialize extensions (ONLY ONCE)
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+>>>>>>> 3d8af6db3e8f691708abb33990f55b7a307d5c56
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -58,30 +64,32 @@ class AIInteraction(db.Model):
 # Routes
 @app.route('/')
 def index():
-    """Main dashboard page"""
+    """Main dashboard page - returns API status and basic stats"""
     try:
         # Get recent interactions
         recent_interactions = AIInteraction.query.order_by(
             AIInteraction.timestamp.desc()
         ).limit(10).all()
-        
+
         # Get statistics
         total_interactions = AIInteraction.query.count()
         avg_rating = db.session.query(db.func.avg(AIInteraction.rating)).scalar()
-        
+
         stats = {
             'total_interactions': total_interactions,
             'avg_rating': round(avg_rating, 2) if avg_rating else 0,
-            'recent_count': len(recent_interactions)
         }
-        
-        return render_template('index.html', 
-                             interactions=recent_interactions, 
-                             stats=stats)
+
+        return jsonify({
+            'status': 'API is running',
+            'message': 'Welcome to the ZenziAI Visibility Backend API',
+            'stats': stats,
+            'recent_interactions': [interaction.to_dict() for interaction in recent_interactions]
+        })
+
     except Exception as e:
-        logger.error(f"Error in index route: {e}")
-        flash('Error loading dashboard data', 'error')
-        return render_template('index.html', interactions=[], stats={})
+        logging.error(f"Error on main dashboard page: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/log_interaction', methods=['POST'])
 def log_interaction():
