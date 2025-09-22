@@ -17,8 +17,7 @@ migrate = Migrate(app, db)
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
     # Handle Render's postgres:// URL (need postgresql://)
-    if database_url.startswith('postgres://'):
-        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    if database_url.startswith('postgres://'):        database_url = database_url.replace('postgres://', 'postgresql://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 else:
     # Fallback to SQLite for local development
@@ -28,8 +27,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 
 # Initialize extensions
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
