@@ -56,10 +56,8 @@ class AIInteraction(db.Model):
             'rating': self.rating
         }
 
-# Routes
+        # Routes
 @app.route('/')
-def index():
-    @app.route('/')
 def index():
     """Main dashboard page - returns API status and basic stats"""
     try:
