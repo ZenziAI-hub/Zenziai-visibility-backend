@@ -19,7 +19,7 @@ Jinja2==3.1.6
 jiter==0.10.0
 MarkupSafe==3.0.2
 openai==1.99.1
-pg8000
+psycopg2-binary==2.9.9
 pydantic==2.11.7
 pydantic_core==2.33.2
 python-dotenv==1.0.0
