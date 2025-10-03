@@ -1,3 +1,4 @@
+from flask_cors import CORS
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -6,6 +7,7 @@ import os
 import logging
 
 app = Flask(__name__)
+CORS(app)
 
 # Database Configuration
 database_url = os.environ.get("DATABASE_URL")
@@ -13,9 +15,12 @@ database_url = os.environ.get("DATABASE_URL")
 if database_url:
     # Handle Render's postgres:// URL (need postgresql://)
     if database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql+pg8000://", 1)
-    elif database_url.startswith("postgresql://"):
-        database_url = database_url.replace("postgresql://", "postgresql+pg8000://", 1)
+        database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+    elif database_url.startswith("postgresql+pg8000://"):
+        database_url = database_url.replace("postgresql+pg8000://", "postgresql+psycopg2://", 1)
+    elif database_url.startswith("postgresql://") and "+psycopg2" not in database_url:
+        database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+    
     # ALWAYS set SQLALCHEMY_DATABASE_URI if DATABASE_URL is present
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 else:
@@ -56,7 +61,7 @@ class AIInteraction(db.Model):
             'rating': self.rating
         }
 
-        # Routes
+# Routes
 @app.route('/')
 def index():
     """Main dashboard page - returns API status and basic stats"""
@@ -204,20 +209,12 @@ def health_check():
             'timestamp': datetime.utcnow().isoformat()
         }), 500
 
-# Database initialization
-def create_tables():
-    """Create database tables"""
-    try:
-        with app.app_context():
-            db.create_all()
-            logger.info("Database tables created successfully")
-    except Exception as e:
-        logger.error(f"Error creating tables: {e}")
-
 if __name__ == '__main__':
-    # Create tables on startup
-    create_tables()
+    # Create database tables if they don't exist
+    with app.app_context():
+        db.create_all()
+        logger.info("Database tables created successfully")
     
     # Get port from environment variable (Render uses PORT)
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=True)
