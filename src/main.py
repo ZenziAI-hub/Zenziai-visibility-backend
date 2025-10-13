@@ -89,7 +89,7 @@ def index():
         })
 
     except Exception as e:
-        logging.error(f"Error on main dashboard page: {e}")
+       logging.exception("Error on main dashboard page:")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/log_interaction', methods=['POST'])
