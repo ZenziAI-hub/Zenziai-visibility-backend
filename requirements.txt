@@ -1,6 +1,8 @@
 annotated-types==0.7.0
 anyio==4.10.0
 blinker==1.9.0
+beautifulsoup4==4.12.x
+requests==2.31.x
 certifi==2025.8.3
 click==8.2.1
 distro==1.9.0
