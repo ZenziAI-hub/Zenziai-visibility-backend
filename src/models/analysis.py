@@ -1,51 +1,29 @@
-from flask_sqlalchemy import SQLAlchemy
+from src.models import db  # Import the shared db instance
 from datetime import datetime
 import json
 
-db = SQLAlchemy()
-
 class CompanyAnalysis(db.Model):
+    """Model for storing company AI visibility analyses"""
+    __tablename__ = 'company_analyses'
+    
     id = db.Column(db.Integer, primary_key=True)
     company_name = db.Column(db.String(200), nullable=False)
     analysis_date = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Platform scores (JSON format)
-    chatgpt_scores = db.Column(db.Text)  # JSON string containing CIDR, SCVS, ACSO, UIFL scores
-    claude_scores = db.Column(db.Text)
-    perplexity_scores = db.Column(db.Text)
-    arc_search_scores = db.Column(db.Text)
-    searchgpt_scores = db.Column(db.Text)
-    
-    # Overall insights
     insights = db.Column(db.Text)
+    platform_scores = db.Column(db.Text)  # JSON stored as text
     
-    def __repr__(self):
-        return f'<CompanyAnalysis {self.company_name}>'
+    def set_platform_scores(self, platform, scores):
+        """Set scores for a specific platform"""
+        current_scores = json.loads(self.platform_scores) if self.platform_scores else {}
+        current_scores[platform] = scores
+        self.platform_scores = json.dumps(current_scores)
     
     def to_dict(self):
+        """Convert to dictionary for JSON response"""
         return {
             'id': self.id,
             'company_name': self.company_name,
             'analysis_date': self.analysis_date.isoformat(),
-            'chatgpt_scores': json.loads(self.chatgpt_scores) if self.chatgpt_scores else {},
-            'claude_scores': json.loads(self.claude_scores) if self.claude_scores else {},
-            'perplexity_scores': json.loads(self.perplexity_scores) if self.perplexity_scores else {},
-            'arc_search_scores': json.loads(self.arc_search_scores) if self.arc_search_scores else {},
-            'searchgpt_scores': json.loads(self.searchgpt_scores) if self.searchgpt_scores else {},
-            'insights': self.insights
+            'insights': self.insights,
+            'platform_scores': json.loads(self.platform_scores) if self.platform_scores else {}
         }
-    
-    def set_platform_scores(self, platform, scores):
-        """Set scores for a specific platform"""
-        scores_json = json.dumps(scores)
-        if platform.lower() == 'chatgpt':
-            self.chatgpt_scores = scores_json
-        elif platform.lower() == 'claude':
-            self.claude_scores = scores_json
-        elif platform.lower() == 'perplexity':
-            self.perplexity_scores = scores_json
-        elif platform.lower() == 'arc_search':
-            self.arc_search_scores = scores_json
-        elif platform.lower() == 'searchgpt':
-            self.searchgpt_scores = scores_json
-
