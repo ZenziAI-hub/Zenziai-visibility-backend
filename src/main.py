@@ -33,7 +33,7 @@ db.init_app(app)  # Changed from db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # Register blueprints
-app.register_blueprint(analysis_bp)
+app.register_blueprint(analysis_bp, url_prefix='/api')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
