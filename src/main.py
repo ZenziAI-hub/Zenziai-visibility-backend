@@ -1,6 +1,7 @@
 from flask_cors import CORS
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
+from src.routes.analysis import analysis_bp
+from src.models import db  # Import db from models
 from flask_migrate import Migrate
 from datetime import datetime
 import os
@@ -13,7 +14,6 @@ CORS(app)
 database_url = os.environ.get("DATABASE_URL")
 
 if database_url:
-    # Handle Render's postgres:// URL (need postgresql://)
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
     elif database_url.startswith("postgresql+pg8000://"):
@@ -21,24 +21,25 @@ if database_url:
     elif database_url.startswith("postgresql://") and "+psycopg2" not in database_url:
         database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
     
-    # ALWAYS set SQLALCHEMY_DATABASE_URI if DATABASE_URL is present
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 else:
-    # Fallback to SQLite for local development (only if DATABASE_URL is not set)
     app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///ai_visibility.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
 
-# Initialize extensions (ONLY ONCE)
-db = SQLAlchemy(app)
+# Initialize extensions
+db.init_app(app)  # Changed from db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+# Register blueprints
+app.register_blueprint(analysis_bp)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Database Models
+# Database Models (keep your AIInteraction model here)
 class AIInteraction(db.Model):
     __tablename__ = 'ai_interactions'
     
