@@ -3,7 +3,8 @@ from src.models.analysis import CompanyAnalysis, db
 from src.services.ai_analyzer import AIAnalyzer
 import json
 import requests  
-from bs4 import BeautifulSoup  
+from bs4 import BeautifulSoup
+from src.services.url_analyzer import URLAnalyzer
 
 analysis_bp = Blueprint('analysis', __name__)
 
@@ -137,60 +138,13 @@ def analyze_url():
         return jsonify({'error': 'URL is required'}), 400
     
     try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        html_content = response.text
-        soup = BeautifulSoup(html_content, 'html.parser')
-        
-        # Extract title and meta description for initial analysis
-        title = soup.title.string if soup.title else 'No title found'
-        meta_description = soup.find('meta', attrs={'name': 'description'})
-        meta_description_content = meta_description['content'] if meta_description else 'No meta description found'
-        
-        # Placeholder for actual analysis logic
-        analysis_results = {
-            "url": url,
-            "overall_score": {
-                "value": 50,
-                "interpretation": "Initial analysis based on basic content extraction."
-            },
-            "content_quality": {
-                "score": 0,
-                "findings": [
-                    f"Page Title: {title}",
-                    f"Meta Description: {meta_description_content}",
-                    "Further content quality analysis pending."
-                ]
-            },
-            "relevance_and_intent": {
-                "score": 0,
-                "findings": ["Further relevance and intent analysis pending."]
-            },
-            "source_credibility": {
-                "score": 0,
-                "findings": ["Further source credibility analysis pending."]
-            },
-            "content_structure": {
-                "score": 0,
-                "findings": ["Further content structure analysis pending."]
-            },
-            "freshness_and_timeliness": {
-                "score": 0,
-                "findings": ["Further freshness and timeliness analysis pending."]
-            },
-            "user_engagement_potential": {
-                "score": 0,
-                "findings": ["Further user engagement potential analysis pending."]
-            },
-            "technical_seo": {
-                "score": 0,
-                "findings": ["Further technical SEO analysis pending."]
-            }
-        }
-        
+        analyzer = URLAnalyzer()
+        analysis_results = analyzer.analyze_url(url)
+
+        if 'error' in analysis_results:
+            return jsonify(analysis_results), 400
+            
         return jsonify(analysis_results)
     
-    except requests.exceptions.RequestException as e:
-        return jsonify({'error': f'Failed to fetch URL: {str(e)}'}), 400
     except Exception as e:
         return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
