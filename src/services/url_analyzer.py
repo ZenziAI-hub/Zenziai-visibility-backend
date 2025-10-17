@@ -11,11 +11,11 @@ import datetime
 # Download necessary NLTK data (only once)
 try:
     nltk.data.find('tokenizers/punkt')
-except nltk.downloader.DownloadError:
+except (LookupError, Exception):
     nltk.download('punkt')
 try:
     nltk.data.find('corpora/stopwords')
-except nltk.downloader.DownloadError:
+except (LookupError, Exception):
     nltk.download('stopwords')
 
 class URLAnalyzer:
