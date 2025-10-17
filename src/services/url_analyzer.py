@@ -12,7 +12,7 @@ import datetime
 try:
     nltk.data.find('tokenizers/punkt')
 except (LookupError, Exception):
-    nltk.download('punkt')
+    nltk.download('punkt_tab')
 try:
     nltk.data.find('corpora/stopwords')
 except (LookupError, Exception):
