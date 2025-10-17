@@ -10,7 +10,7 @@ import datetime
 
 # Download necessary NLTK data (only once)
 try:
-    nltk.data.find('tokenizers/punkt')
+    nltk.data.find('tokenizers/punkt_tab')
 except (LookupError, Exception):
     nltk.download('punkt_tab')
 try:
